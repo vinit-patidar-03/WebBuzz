@@ -6,7 +6,15 @@ export default function Schedule() {
   const [selectedRound, setselectedRound] = useState(0)
   const [tournamentsData, setTournamentsData] = useState([])
   const [matchesData, setMatchesData] = useState([])
-  // const matchesData = selectedTournament?.matches?.filter(match => selectedRound == 0 || match.round === selectedRound)
+  const [activeMatchId, setActiveMatchId] = useState(null);
+
+  const showScorecard = (matchId) => {
+    setActiveMatchId(matchId);
+  };
+
+  const closeScorecard = () => {
+    setActiveMatchId(null);
+  };
 //   const data_2=[{
 //     "_id": "66ddb34d5545bbf149d4f8b7",
 //     "name": "MCF",
@@ -799,6 +807,7 @@ export default function Schedule() {
   const fetchTournaments = async () => {
     const response = await fetch("http://localhost:3000/tournaments")
     const data = await response.json()
+    // const data=data_2
     setTournamentsData(data)
     setselectedTournament(data[0]._id);
     setMatchesData(data[0].matches);
@@ -896,7 +905,7 @@ export default function Schedule() {
                             <BirdIcon className="h-5 w-5" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium">{match.teams}</p>
+                            <p className="text-sm font-medium">{match.team1.name} vs. {match.team2.name}</p>
                             <p className="text-sm text-muted-foreground">{match.date}</p>
                           </div>
                         </div>
@@ -905,17 +914,31 @@ export default function Schedule() {
                             href="#"
                             className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                             prefetch={false}
+                            onClick={() => showScorecard(match._id)}
                           >
                             View Scorecard
                           </Link>
                         ) : (
-                          <Link
-                            href="#"
-                            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                            prefetch={false}
-                          >
-                            View Details
-                          </Link>
+                          <h3>Forthcoming!</h3>
+                        )}
+                        {/* Render the modal for this match if it's active */}
+                        {activeMatchId === match._id && (
+                          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                            <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+                              <h2 className="text-xl font-bold mb-4">Match Scorecard</h2>
+                              <div className="text-sm">
+                                <p>{match.team1.name}: {match.team1_score}/{match.team1_wickets} in {match.team1_overs} overs (Extras: {match.team1_extras})</p>
+                                <p>{match.team2.name}: {match.team2_score}/{match.team2_wickets} in {match.team2_overs} overs (Extras: {match.team2_extras})</p>
+                                <p className="font-semibold mt-2">Winner: {match.team1._id===match.winner ? match.team1.name : match.team2._id===match.winner ? match.team2.name : "No Result" }</p>
+                              </div>
+                              <button
+                                className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                                onClick={closeScorecard}
+                              >
+                                Close
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     ))}
