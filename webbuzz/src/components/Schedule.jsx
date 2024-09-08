@@ -1,127 +1,36 @@
-import { useState } from "react"
-import {Link} from "react-router-dom"
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 
 export default function Schedule() {
-  const [selectedTournament, setselectedTournament] = useState("t20")
-  const [selectedYear, setselectedYear] = useState("2024")
+  const [selectedTournament, setselectedTournament] = useState({})
   const [selectedRound, setselectedRound] = useState("all")
-  const upcomingMatches = [
-    {
-      tournament: "t20",
-      year: "2024",
-      round: "group",
-      teams: "XYZ vs ABC Cricket Club",
-      date: "June 15, 2023 - 2:00 PM",
-      completed: false,
-    },
-    {
-      tournament: "t20",
-      year: "2024",
-      round: "group",
-      teams: "PQR vs XYZ Cricket Club",
-      date: "June 22, 2023 - 3:00 PM",
-      completed: false,
-    },
-    {
-      tournament: "odi",
-      year: "2024",
-      round: "semifinal",
-      teams: "XYZ Cricket Club vs ABC Cricket Club",
-      date: "June 25, 2023 - 1:00 PM",
-      completed: false,
-    },
-    {
-      tournament: "odi",
-      year: "2024",
-      round: "final",
-      teams: "PQR Cricket Club vs XYZ Cricket Club",
-      date: "June 30, 2023 - 2:00 PM",
-      completed: false,
-    },
-    {
-      tournament: "test",
-      year: "2024",
-      round: "group",
-      teams: "XYZ Cricket Club vs ABC Cricket Club",
-      date: "July 5 - July 9, 2023",
-      completed: false,
-    },
-    {
-      tournament: "test",
-      year: "2024",
-      round: "semifinal",
-      teams: "PQR Cricket Club vs XYZ Cricket Club",
-      date: "July 15 - July 19, 2023",
-      completed: false,
-    },
-  ]
-  const recentResults = [
-    {
-      tournament: "t20",
-      year: "2024",
-      round: "group",
-      teams: "XYZ Cricket Club vs ABC Cricket Club",
-      date: "June 10, 2023",
-      result: "XYZ won by 5 wickets",
-    },
-    {
-      tournament: "t20",
-      year: "2024",
-      round: "semifinal",
-      teams: "PQR Cricket Club vs XYZ Cricket Club",
-      date: "June 15, 2023",
-      result: "PQR won by 3 wickets",
-    },
-    {
-      tournament: "odi",
-      year: "2024",
-      round: "group",
-      teams: "XYZ Cricket Club vs ABC Cricket Club",
-      date: "June 20, 2023",
-      result: "XYZ won by 7 wickets",
-    },
-    {
-      tournament: "odi",
-      year: "2024",
-      round: "final",
-      teams: "PQR Cricket Club vs XYZ Cricket Club",
-      date: "June 25, 2023",
-      result: "PQR won by 5 wickets",
-    },
-    {
-      tournament: "test",
-      year: "2024",
-      round: "group",
-      teams: "XYZ Cricket Club vs ABC Cricket Club",
-      date: "July 1 - July 5, 2023",
-      result: "Match drawn",
-    },
-    {
-      tournament: "test",
-      year: "2024",
-      round: "semifinal",
-      teams: "PQR Cricket Club vs XYZ Cricket Club",
-      date: "July 10 - July 14, 2023",
-      result: "PQR won by an innings and 20 runs",
-    },
-  ]
-  const filteredUpcomingMatches = upcomingMatches.filter(
-    (match) =>
-      match.tournament === selectedTournament &&
-      match.year === selectedYear &&
-      (selectedRound === "all" || match.round === selectedRound),
-  )
-  const filteredRecentResults = recentResults.filter(
-    (result) =>
-      result.tournament === selectedTournament &&
-      result.year === selectedYear &&
-      (selectedRound === "all" || result.round === selectedRound),
-  )
+  const [tournamentsData, setTournamentsData] = useState([])
+  const [matchesData, setMatchesData] = useState([])
+  // const matchesData = selectedTournament?.matches?.filter(match => selectedRound == 0 || match.round === selectedRound)
+
+  const fetchTournaments = async () => {
+    const response = await fetch("http://localhost:3000/tournaments")
+    const data = await response.json()
+    setTournamentsData(data)
+    setselectedTournament(data[0]);
+    setMatchesData(data[0].matches);
+  }
+
+  useEffect(() => {
+    fetchTournaments()
+  }, []);
+  useEffect(() => {
+    setMatchesData(selectedTournament?.matches?.filter(match => selectedRound == 0 || match.round === selectedRound))
+  }, [selectedTournament, selectedRound])
+
+  console.log(selectedTournament);
+
+
   const rounds = [
-    { value: "all", label: "All Rounds" },
-    { value: "group", label: "Group Stage" },
-    { value: "semifinal", label: "Semi-Finals" },
-    { value: "final", label: "Finals" },
+    { value: 0, label: "All Rounds" },
+    { value: 1, label: "Group Stage" },
+    { value: 2, label: "Semi-Finals" },
+    { value: 3, label: "Finals" },
   ]
   return (
     <div className="flex flex-col min-h-[100dvh]">
@@ -160,32 +69,31 @@ export default function Schedule() {
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <select value={selectedTournament} onValueChange={(e) => setselectedTournament(e.target.value)}>
-                    <option value="t20">T20 Tournament</option>
-                    <option value="odi">ODI Tournament</option>
-                    <option value="test">Test Tournament</option>
+                <select value={selectedTournament} onChange={(e) => setselectedTournament(e.target.value)}>
+                  {tournamentsData.length > 0 && tournamentsData?.map((tournament) => (
+                    console.log(tournament),
+                    <option key={tournament._id} value={tournament}>
+                      {tournament.name}
+                    </option>
+
+                  ))}
                 </select>
-                <select value={selectedYear} onValueChange={(e) => setselectedYear(e.target.value)}>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022">2022</option>
-                </select>
-                <select value={selectedRound} onValueChange={(e) => setselectedRound(e.target.value)}>
-                  
-                    {rounds.map((round) => (
-                      <option key={round.value} value={round.value}>
-                        {round.label}
-                      </option>
-                    ))}
+                <select value={selectedRound} onChange={(e) => setselectedRound(e.target.value)}>
+
+                  {rounds.map((round) => (
+                    <option key={round.value} value={round.value}>
+                      {round.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="grid gap-1">
-                  <h3 className="text-xl font-bold">Upcoming Matches</h3>
+                  <h3 className="text-xl font-bold">Matches</h3>
                   <div className="grid gap-2">
-                    {filteredUpcomingMatches.map((match, index) => (
+                    {matchesData?.map((match, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-between rounded-md bg-background p-4 shadow-sm"
@@ -216,38 +124,6 @@ export default function Schedule() {
                             View Details
                           </Link>
                         )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="grid gap-1">
-                  <h3 className="text-xl font-bold">Recent Results</h3>
-                  <div className="grid gap-2">
-                    {filteredRecentResults.map((result, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between rounded-md bg-background p-4 shadow-sm"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="rounded-full bg-primary p-2 text-primary-foreground">
-                            <BirdIcon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{result.teams}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {result.date} - Result: {result.result}
-                            </p>
-                          </div>
-                        </div>
-                        <Link
-                          href="#"
-                          className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                          prefetch={false}
-                        >
-                          View Scorecard
-                        </Link>
                       </div>
                     ))}
                   </div>
