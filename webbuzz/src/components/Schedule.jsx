@@ -24,7 +24,6 @@ export default function Schedule() {
     setTournamentsData(data)
 
     setAllTournaments(data)
-    console.log(data);
 
     setselectedTournament(data[0]);
 
