@@ -18,7 +18,7 @@ export default function Schedule() {
   };
 
   const fetchTournaments = async () => {
-    const response = await fetch("http://localhost:3000/tournaments")
+    const response = await fetch("https://web-buzz.vercel.app/tournaments")
     const data = await response.json()
     // const data=data_2
     setTournamentsData(data)
